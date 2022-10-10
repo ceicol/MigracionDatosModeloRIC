@@ -439,3 +439,9 @@ where  tipo_de_documento_de_identificacion   like 'NIT';
 alter table girondatos drop numero_subterraneos;
 alter table girondatos drop vereda_codigo;
 alter table girondatos drop propietario;
+
+--Cambio del sistema de proyección de la capa de terrenos
+alter table public.terreno 
+  alter column geom type geometry(MultiPolygon, 9377)
+    using st_transform(st_setsrid(geom,3116), 9377)
+;
