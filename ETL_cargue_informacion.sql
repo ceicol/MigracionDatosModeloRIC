@@ -113,6 +113,7 @@ select
 from public.terreno te 
 join etl.ric_predio pr on pr.numero_predial =te.codigo ;
 
+update etl.ric_terreno set geometria = ST_RemoveRepeatedPoints(geometria);
 --========================================================================
 -- 4. Registramos la tabla de relacion entre los terrenos y predios 
 --========================================================================
@@ -180,7 +181,10 @@ select
 	g1.primer_nombre as primer_nombre,
 	g1.segundo_nombre  as segundo_nombre,
 	g1.primer_apellido as primer_apellido,
-	g1.segundo_apellido  as segundo_apellido,
+	case 
+		when  g1.segundo_apellido like '' then null
+		else  g1.segundo_apellido
+	end ,
 	null as sexo,
 	(select t_id from etl.ric_grupoetnicotipo where ilicode = g1.grupo_etnico),
 	g1.razon_social,
@@ -218,13 +222,11 @@ having count(gi.codigo) >1;
 insert into etl.col_miembros(
 t_ili_tid, 
 interesado_ric_interesado, 
-interesado_ric_agrupacioninteresados, 
 agrupacion, 
 participacion)
 select 
 	uuid_generate_v4() as t_ili_tid,
 	it.t_id as interesado_ric_interesado,
-	ag.t_id as interesado_ric_agrupacioninteresados,
 	ag.t_id as agrupacion,
 	0.1 as participacion  
 from etl.ric_agrupacioninteresados  ag
@@ -307,4 +309,43 @@ select
 	fu.t_id,
 	de.t_id 
 from etl.ric_derecho de join etl.ric_fuenteadministrativa fu
-on de.espacio_de_nombres = fu.espacio_de_nombres 
+on de.espacio_de_nombres = fu.espacio_de_nombres
+
+--========================================================================
+-- 9. Registramos los tramites catastrales
+--========================================================================
+--9.1 Se crea un campo temporal para asociar el predio al tramite
+alter table etl.ric_tramitecatastral  add id_predio varchar(40);
+
+--9.2 Ingreamos la informacion de tramites catastrales
+insert into etl.ric_tramitecatastral(
+	t_ili_tid,
+	clasificacion_mutacion,
+	numero_resolucion,
+	fecha_resolucion,
+	fecha_radicacion,
+	id_predio)
+select
+	uuid_generate_v4() as t_id,
+	(select t_id from etl.ric_mutaciontipo where ilicode like tr.clasificacion_tipo) tramite, 
+	tr.resolucion,
+	cast(tr.fecha_inicio as date),
+	cast(tr.fecha_radicacion  as date),
+	pr.numero_predial
+from public.tramites  tr 
+join etl.ric_predio pr on pr.numero_predial  = tr.codigo 
+where pr.numero_predial is not null;
+
+--9.3 se registra la tabla que relaciona los predios-tramite catastral
+insert into etl.ric_predio_tramitecatastral
+(t_ili_tid, ric_predio, ric_tramite_catastral)
+select
+	uuid_generate_v4() as t_ili_tid ,
+	pr.t_id as ric_predio ,
+	rtr.t_id as ric_tramite_catastral 
+from etl.ric_tramitecatastral rtr 
+join etl.ric_predio pr on rtr.id_predio = pr.numero_predial 
+
+--Borado de atributos temporales
+alter table etl.ric_tramitecatastral drop  id_predio; 
+alter table etl.ric_interesado  drop id_predio;
