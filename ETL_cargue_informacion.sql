@@ -127,7 +127,7 @@ select
 	te.t_id as id_terreno,
 	pr.t_id as id_predio
 from etl.ric_terreno te join etl.ric_predio pr
-on te.etiqueta = pr.numero_predial 
+on te.etiqueta = pr.numero_predial;
 
 --========================================================================
 -- 5. Registramos las direccion asociada a cada predio
@@ -200,6 +200,7 @@ from  (
 	from public.girondatos) as g1 where g1.numero_fila = 1;
 
 --6.3 Registramos la agrupacion de interesados
+
 insert into etl.ric_agrupacioninteresados(
 	t_ili_tid,
 	tipo,
@@ -232,9 +233,9 @@ select
 from etl.ric_agrupacioninteresados  ag
 join public.girondatos  gi on ag.nombre =gi.codigo 
 join etl.ric_interesado it on it.documento_identidad =gi.numero_documento;
-;
+
 --========================================================================
--- 6. Registramos los derechos
+-- 7. Registramos los derechos
 --========================================================================
 insert into etl.ric_derecho(
 	t_ili_tid,
@@ -262,23 +263,24 @@ on  gi.codigo  = pr.numero_predial where gi.numero_fila = 1;
 
 
 
--- 6.1 Registramos la relacion derecho-agrupacion de interesados
+-- 7.1 Registramos la relacion derecho-agrupacion de interesados
+
 update etl.ric_derecho as dr
 set  interesado_ric_agrupacioninteresados = agrupacion.t_id 
 from (select ra.t_id as t_id, ra.nombre as nombres from etl.ric_agrupacioninteresados ra  join etl.ric_derecho dr
 on ra.nombre = dr.espacio_de_nombres
 ) as agrupacion  where dr.espacio_de_nombres =  agrupacion.nombres;
 
--- 6.2 Registramos la relacion derecho-interesados
+-- 7.2 Registramos la relacion derecho-interesados
 
 update etl.ric_derecho 
 set interesado_ric_interesado = it.t_id 
 from etl.ric_interesado it
 where  ric_derecho.espacio_de_nombres = it.id_predio  and
-ric_derecho.interesado_ric_agrupacioninteresados  is null 
+ric_derecho.interesado_ric_agrupacioninteresados  is null;
 
 --========================================================================
--- 7. Registramos las fuentes administrativas
+-- 8. Registramos las fuentes administrativas
 --========================================================================
 insert into etl.ric_fuenteadministrativa(
 	t_ili_tid,
@@ -300,8 +302,9 @@ select
 from public.girondatos gi;
 
 --========================================================================
--- 8. Registramos la tabla col_rrrfuente
+-- 9. Registramos la tabla col_rrrfuente
 --========================================================================
+
 insert into etl.col_rrrfuente
 (t_ili_tid, fuente_administrativa, rrr)
 select
@@ -309,15 +312,15 @@ select
 	fu.t_id,
 	de.t_id 
 from etl.ric_derecho de join etl.ric_fuenteadministrativa fu
-on de.espacio_de_nombres = fu.espacio_de_nombres
+on de.espacio_de_nombres = fu.espacio_de_nombres;
 
 --========================================================================
--- 9. Registramos los tramites catastrales
+-- 10. Registramos los tramites catastrales
 --========================================================================
---9.1 Se crea un campo temporal para asociar el predio al tramite
+--10.1 Se crea un campo temporal para asociar el predio al tramite
 alter table etl.ric_tramitecatastral  add id_predio varchar(40);
 
---9.2 Ingreamos la informacion de tramites catastrales
+--10.2 Ingreamos la informacion de tramites catastrales
 insert into etl.ric_tramitecatastral(
 	t_ili_tid,
 	clasificacion_mutacion,
@@ -336,7 +339,7 @@ from public.tramites  tr
 join etl.ric_predio pr on pr.numero_predial  = tr.codigo 
 where pr.numero_predial is not null;
 
---9.3 se registra la tabla que relaciona los predios-tramite catastral
+--10.3 se registra la tabla que relaciona los predios-tramite catastral
 insert into etl.ric_predio_tramitecatastral
 (t_ili_tid, ric_predio, ric_tramite_catastral)
 select
@@ -344,8 +347,8 @@ select
 	pr.t_id as ric_predio ,
 	rtr.t_id as ric_tramite_catastral 
 from etl.ric_tramitecatastral rtr 
-join etl.ric_predio pr on rtr.id_predio = pr.numero_predial 
+join etl.ric_predio pr on rtr.id_predio = pr.numero_predial;
 
---Borado de atributos temporales
+--11. Borado de atributos temporales
 alter table etl.ric_tramitecatastral drop  id_predio; 
 alter table etl.ric_interesado  drop id_predio;

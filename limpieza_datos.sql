@@ -132,7 +132,7 @@ where tipo_de_documento_de_identificacion like 'NIT';
 --Identificacion del grupo de valores registrados en estado_civil
 select estado_civil from girondatos group by estado_civil;
 
---Estandarizacion de valores de estado_etnico segun el modelo RIV
+--Estandarizacion de valores de estado_civil segun el modelo RIV
 update girondatos 
 set estado_civil = (case
 		when estado_civil like 'CASADO' then 'Casado'
@@ -364,7 +364,7 @@ set segundo_nombre = (string_to_array(propietario, ' '))[2]
 where  tipo_de_documento_de_identificacion  not like 'NIT' 
 and (array_length(string_to_array(propietario , ' '),1)-1) = 3  
 and propietario  not like '% DE %' and propietario  not like '% DEL %';
-update girondatos
+
 
 update girondatos
 set primer_apellido= (string_to_array(propietario, ' '))[3]
