@@ -28,7 +28,7 @@ select
 -- 2. Registramos los predios
 --========================================================================
 
-INSERT INTO etl.ric_predio (
+insert into etl.ric_predio (
     t_ili_tid, 
     departamento, 
     municipio, 

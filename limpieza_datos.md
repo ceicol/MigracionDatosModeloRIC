@@ -21,23 +21,23 @@
 
         ```sql
         --Verificar si hay espacios en el codigo predial nacional 
-        select * from girondatos  where codigo like '% %';
+        select * from public.girondatos  where codigo like '% %';
          
         --Remover espacios dobles en el codigo predial nacional
-        update  girondatos set codigo =replace (codigo,' ', '')
+        update  public.girondatos set codigo =replace (codigo,' ', '')
         where codigo like '% %' 
         ```
    - Verificar y corregir si hay caracteres alfanuméricos, en la estructura del código predial nacional.   
         ```sql
         --Verificar si se encuentra caracteres no numericos en el codigo predial nacional
-        select *  from girondatos  where codigo !~ '^[0-9]*$';
+        select *  from public.girondatos  where codigo !~ '^[0-9]*$';
          
         --Los caracteres alfanumericos que se encontraron pasan a estar en minuscula 
-        update girondatos set codigo = lower(codigo)
+        update public.girondatos set codigo = lower(codigo)
         where codigo !~ '^[0-9]*$';
         
         --Correcion de caracteres alfanumericos del codigo predial nacional
-        update girondatos 
+        update public.girondatos 
         set codigo= replace (codigo, 'o', '0')   
         where codigo !~ '^[0-9]*$';
         ```
@@ -45,19 +45,19 @@
    
         ```sql
         --Identificacion de registros que no correspondan al municipio de Giron del departamento de Santander
-        select * from girondatos where codigo not like '68307%';
+        select * from public.girondatos where codigo not like '68307%';
     
         --Depuracion de los datos que no sean del municipio de giron
-        delete from girondatos where  codigo not like '68307%';
+        delete from public.girondatos where  codigo not like '68307%';
         ```
 
     - Se debe verificar y corregir que los predios que corresponden al perímetro rural, en la estructura del  código  predial nacional en su posición nacional se le asigne el valor ‘00’. 
         ```sql
         --Identificación de predios que en su codigo nacional en la posicion 6 y 7 que sean rurales se codifiquen con '00'
-        select * from girondatos where codigo not like '6830700%' and tipo_predio  = 'RURAL';
+        select * from public.girondatos where codigo not like '6830700%' and tipo_predio  = 'RURAL';
          
         -- Correción de los registros que presentan la problematica en el codigo nacional 
-        update girondatos 
+        update public.girondatos 
         set codigo=replace (codigo,'6830701','6830700')
         where codigo not like '6830700%' and tipo_predio  = 'RURAL';
         ```
@@ -66,22 +66,22 @@
     - Verificar y corregir si hay presencia se espacios en el código predial nacional anterior.
         ```sql
         --verificar si hay espacios en el codigo predial anterior
-        select * from girondatos  where codigo_anterior like '% %';
+        select * from public.girondatos  where codigo_anterior like '% %';
             
         --Remover espacios dobles en el codigo predial anterior 
-        update  girondatos set codigo_anterior  =replace (codigo_anterior ,' ', '') where codigo_anterior like '% %';
+        update  public.girondatos set codigo_anterior  =replace (codigo_anterior ,' ', '') where codigo_anterior like '% %';
         ```
     - Verificar y corregir si hay caracteres alfanuméricos, en la estructura del código predial nacional anterior.
      
         ```sql
         --Verificar si se encuentra caracteres no numericos en el codigo predial anterior
-        select *  from girondatos  where codigo_anterior  !~ '^[0-9]*$';
+        select *  from public.girondatos  where codigo_anterior  !~ '^[0-9]*$';
         
         --Los caracteres alfanumericos que se encontraron pasan a estar en minuscula 
-        update girondatos set codigo_anterior  = lower(codigo_anterior)
+        update public.girondatos set codigo_anterior  = lower(codigo_anterior)
         where codigo_anterior  !~ '^[0-9]*$';
         --Correcion de caracteres alfanumericos del codigo predial anterior
-        update girondatos 
+        update public.girondatos 
         set codigo_anterior = replace (codigo_anterior, 'o', '0')   
         where codigo_anterior  !~ '^[0-9]*$';
         ```
@@ -89,10 +89,10 @@
 
         ```sql
         --Identificacion de predios que en su codigo nacional en la posicion 6 y 7 que sean rurales se codifiquen con 
-        select * from girondatos where codigo_anterior  not like '6830700%' and tipo_predio  = 'RURAL';
+        select * from public.girondatos where codigo_anterior  not like '6830700%' and tipo_predio  = 'RURAL';
         
         -- Correcion de los registros que presentan la problematica en el codigo predial anterio
-        update girondatos 
+        update public.girondatos 
         set codigo_anterior =replace (codigo_anterior ,'6830701','6830700') where codigo_anterior  not like '6830700%' and tipo_predio  = 'RURAL';
         ```
 - **Zona del predio (tipo_predio).**
@@ -101,21 +101,21 @@
     
         ```sql
         -- Valores que registra la zona del predio 
-        select tipo_predio from girondatos group by tipo_predio;
+        select tipo_predio from public.girondatos group by tipo_predio;
         
         --Estandarizacion de valores en zona del predio segun el modelo RIC
-        update girondatos set tipo_predio= (case 
+        update public.girondatos set tipo_predio= (case 
         when tipo_predio like 'RURAL' then  'Rural'
         when tipo_predio like 'URBANO' then 'Urbano'end);
         ```
     - Identificación y corrección de registros de los predios que indican estar en zona Urbana, pero los cuales su código predial nacional, presenta la codificación ‘6830700’ el cual indica estar en perímetro Rural.
         ```sql
         --Identificacion de predios que indican que zona del predio urbano pero en el codigo nacional son rurales
-        select * from girondatos where tipo_predio = 'Urbano' and  codigo  like '6830700%';
+        select * from public.girondatos where tipo_predio = 'Urbano' and  codigo  like '6830700%';
         
         -- Correcion del valor de la zona del predio con respeto a la estructura del codigo predial nacional
         
-        update girondatos set tipo_predio='Rural' 
+        update public.girondatos set tipo_predio='Rural' 
         where tipo_predio = 'Urbano' and  codigo like '6830700%';
         ```
 - **Tipo de documento de identificación (tipo_de_documento_de_identificacion )**
@@ -124,10 +124,10 @@
 
         ```sql
         --Identificacion del grupo de valores del tipo de documento de identificacion
-        select tipo_de_documento_de_identificacion  from girondatos group by tipo_de_documento_de_identificacion;
+        select tipo_de_documento_de_identificacion  from public.girondatos group by tipo_de_documento_de_identificacion;
         
         --Estandarizacion de valores de tipo de docuemnto de identificacion segun el modelo RIV
-        update girondatos 
+        update public.girondatos 
         set tipo_de_documento_de_identificacion = (case 
         when tipo_de_documento_de_identificacion like 'CC' then 'Cedula_Ciudadania'
         when tipo_de_documento_de_identificacion like 'C' then 'Cedula_Ciudadania'
@@ -142,9 +142,9 @@
 
         ``` sql
         --Eliminar los registros con Tarjeta de Identidad
-        delete from girondatos where tipo_de_documento_de_identificacion like 'Tarjeta_Identidad';
+        delete from public.girondatos where tipo_de_documento_de_identificacion like 'Tarjeta_Identidad';
         --Eliminar los registros con Cedula de Ciudadania 
-        delete from girondatos where tipo_de_documento_de_identificacion like 'Cedula_Extranjeria';
+        delete from public.girondatos where tipo_de_documento_de_identificacion like 'Cedula_Extranjeria';
         ```
 - **Tipo de interesado**
   
@@ -152,10 +152,10 @@
 
         ```sql
         -- Crear el atibuto de tipo de interesado
-        alter table  girondatos add tipo_interesado varchar(250);
+        alter table  public.girondatos add tipo_interesado varchar(250);
         
         -- Agregar el tipo de interesado segun el modelo RIC
-        update girondatos set tipo_interesado = (
+        update public.girondatos set tipo_interesado = (
         case
         when tipo_de_documento_de_identificacion like 'NIT' then 'Persona_Juridica'
         else 'Persona_Natural'
@@ -167,10 +167,10 @@
 
         ```sql
         --Identificacion del grupo de valores registrados en grupo_etnico
-        select grupo_etnico  from girondatos group by grupo_etnico;
+        select grupo_etnico  from public.girondatos group by grupo_etnico;
         
         --Estandarizacion de valores de grupo_etnico segun el modelo RIV
-        update girondatos 
+        update public.girondatos 
         set grupo_etnico = (case
             when grupo_etnico like 'NEGRO AFROCOLOMBIANO' then 'Negro_Afrocolombiano'
             when grupo_etnico like 'RROM' then 'Rrom'
@@ -184,7 +184,7 @@
 
         ```sql
         -- remplazar el grupo etnico de los registros con tipo de documento NIT
-        update girondatos set grupo_etnico  =  regexp_replace(grupo_etnico ,'([A-Z])\w+','Ninguno','g')
+        update public.girondatos set grupo_etnico  =  regexp_replace(grupo_etnico ,'([A-Z])\w+','Ninguno','g')
         where tipo_de_documento_de_identificacion like 'NIT';
         ```
 - **Estado civil (estado_civil)**
@@ -193,10 +193,10 @@
     
         ```sql
         --Identificacion del grupo de valores registrados en estado_civil
-        select estado_civil from girondatos group by estado_civil;
+        select estado_civil from public.girondatos group by estado_civil;
         
         --Estandarizacion de valores de estado_etnico segun el modelo RIV
-        update girondatos 
+        update public.girondatos 
         set estado_civil = (case
             when estado_civil like 'CASADO' then 'Casado'
             when estado_civil like 'CASADA' then 'Casado'
@@ -211,7 +211,7 @@
     
         ```sql
         -- remplazar el estado civil de los registros con tipo de documento NIT
-        update girondatos set estado_civil =  regexp_replace(estado_civil,'([A-Z])\w+',null,'g') 
+        update public.girondatos set estado_civil =  regexp_replace(estado_civil,'([A-Z])\w+',null,'g') 
         where tipo_de_documento_de_identificacion like 'NIT';
         ```
 
@@ -220,10 +220,10 @@
 
         ```sql
         --Identificacion del grupo de valores del tipo de documento de la fuente administrativa
-        select tipo_documento  from girondatos group by tipo_documento ;
+        select tipo_documento  from public.girondatos group by tipo_documento ;
         
         --Estandarizacion de valores del tipo de documento de la fuente administrativa segun el modelo RIC
-        update girondatos set tipo_documento = (case 
+        update public.girondatos set tipo_documento = (case 
         when tipo_documento like 'SIN_INFORMACION' then 'Sin_Documento'
         when tipo_documento like 'AUTO' then  'Documento_Publico.Acto_Administrativo'
         when tipo_documento like 'CERTIFICADO' then 'Documento_Publico.Acto_Administrativo'
@@ -241,12 +241,12 @@
 
         ```sql
         --Eliminar los registros con estados de folios cerrados
-        delete  from girondatos where estado_folio like 'CERRADO';
+        delete  from public.girondatos where estado_folio like 'CERRADO';
         ```
     - Eliminar la variable del estado de folio.
         ```sql
         --Borrado del atribuo estado_folio
-        alter table girondatos drop estado_folio;
+        alter table public.girondatos drop estado_folio;
         ```
 
 - **Numero de documento de identificación (numero_documento)**
@@ -254,14 +254,14 @@
     - Verificar que no haya presencia de caracteres alfanuméricos en la identificación del propietario. 
         ```sql
         --Verificar si hay caracteres alfanumeriocos en los numeros de identificacion 
-        select *  from girondatos  where numero_documento !~ '^[0-9]*$';
+        select *  from public.girondatos  where numero_documento !~ '^[0-9]*$';
         ```
     - Verificar que no haya presencia de caracteres alfanuméricos en la identificación del propietario. 
         ```sql
         --Identifacion de numero de documentos de identidad vacios 
-        select * from girondatos where numero_documento like'';
+        select * from public.girondatos where numero_documento like'';
         --Asignacion de valor a los registros con numero  documento de identicacion vacios
-        update girondatos set numero_documento  = 'Sin_Informacion'
+        update public.girondatos set numero_documento  = 'Sin_Informacion'
         where numero_documento like'';
         ```
 - **Tipo de derecho (derecho )**
@@ -270,9 +270,9 @@
 
         ```sql  
         --Identificacion del grupo de valores del tipo de derecho
-        select derecho  from girondatos group by derecho;
+        select derecho  from public.girondatos group by derecho;
         --Estandarizacion de valores  del tipo de derechos segun el modelo RIC
-        update girondatos set derecho = (
+        update public.girondatos set derecho = (
         case
             when derecho like 'POSESION' then 'Posesion'
             when derecho like 'POSECION' then 'Posesion'
@@ -293,9 +293,9 @@
 
         ```sql
         --Verificar si existen fechas menores  a 1930 y mayores a la fecha actual	
-        select * from girondatos where fecha <'1930-01-01' or fecha > now();
+        select * from public.girondatos where fecha <'1930-01-01' or fecha > now();
         --Asignar un valor estandar a  los registros que presentan inconsitencia logica en sus fechas 
-        update girondatos set fecha= null
+        update public.girondatos set fecha= null
         where fecha <'1930-01-01' or fecha > now();
         ```
 - **Nombre del propietario (propietario)**
@@ -304,18 +304,18 @@
     
         ```sql 
         -- Identificacion del caracter '-' en el nombre del propietario
-        select * from girondatos  where propietario ~ '-';
+        select * from public.girondatos  where propietario ~ '-';
         -- correcion del nombre
-        update girondatos  set propietario = replace(propietario,'-',' ') 
+        update public.girondatos  set propietario = replace(propietario,'-',' ') 
         where propietario ~ '-';
         ```
 
     - Identificación y corrección de doble espaciado en el campo de nombre de propietario.
         ```sql
         -- Identificacion de nombres con doble espacio en su campo
-        select * from girondatos where propietario  like '%  %';
+        select * from public.girondatos where propietario  like '%  %';
         -- Correcion del doble espaciado en el nombre del propietario
-        update girondatos  set propietario=replace(propietario,'  ',' ')
+        update public.girondatos  set propietario=replace(propietario,'  ',' ')
         where propietario  like '%  %';
         ```
 
@@ -323,7 +323,7 @@
 
         ```sql
         --Estandarizar los nombres de propiestarios en mayuscula
-        update girondatos set propietario = upper(propietario); 
+        update public.girondatos set propietario = upper(propietario); 
         ```
 
 - **Primer nombre, segundo nombre, primer apellido y segundo apellido.**
@@ -332,10 +332,10 @@
 
         ```sql
         --Creacion de los atributos de primer_nombre, segundo_nombre,primer_apellido y segundo apellido
-        alter table  girondatos add primer_nombre varchar(250);
-        alter table  girondatos add segundo_nombre varchar(250);
-        alter table  girondatos add primer_apellido varchar(250);
-        alter table  girondatos add segundo_apellido varchar(250);
+        alter table  public.girondatos add primer_nombre varchar(250);
+        alter table  public.girondatos add segundo_nombre varchar(250);
+        alter table  public.girondatos add primer_apellido varchar(250);
+        alter table  public.girondatos add segundo_apellido varchar(250);
         ```
     - Numero de espacios en el nombre de propietario.
 
@@ -343,45 +343,45 @@
         --numero de espacios en el nombre del propietario
         select propietario,
         (array_length(string_to_array(propietario , ' '),1)-1) as numero_espacios
-        from girondatos;
+        from public.girondatos;
         ```
     - Nombre de propiatarios con un espacio.    
         - Identificación de los nombres con un espacio.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 1;
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 1;
             ```
         - Primer apellido.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_apellido = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 1;
     - Nombre con dos espacios que en su nombre tienen la expresión 'DEL'.
         - Identificación.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DEL %';
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DEL %';
             ```
         -  Primer apellido.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_apellido = concat((string_to_array(propietario, ' '))[2],' ',(string_to_array(propietario, ' '))[3])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DEL %';
@@ -389,20 +389,20 @@
     -  Nombre con dos espacios que en su nombre tienen la expresión 'DE'.
         - Identificación
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DE %';
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DE %';
             ```
         - Primer apellido.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_apellido = concat((string_to_array(propietario, ' '))[2],' ',(string_to_array(propietario, ' '))[3])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  and propietario  like '% DE %';
@@ -410,14 +410,14 @@
     - Nombres con dos espacios que no tienen la expresión ‘DEL’ y ‘DE’.
         - Identificación.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  
             and propietario  not like '% DE %' and propietario  not like '% DEL %';
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  
@@ -426,7 +426,7 @@
 
         - Primer apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set primer_apellido= (string_to_array(propietario, ' '))[2]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  
@@ -434,7 +434,7 @@
             ```
         - Segundo apellido. 
             ```sql 
-            update girondatos
+            update public.girondatos
             set segundo_apellido= (string_to_array(propietario, ' '))[3]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 2  
@@ -443,20 +443,20 @@
     - Nombre con tres espacios que no tienen la expresión 'DEL'.
         - Identificación.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DEL %';
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DEL %';
             ```
         - Segundo nombre.
             ```sql 
-            update girondatos 
+            update public.girondatos 
             set segundo_nombre = (string_to_array(propietario, ' '))[2]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DEL %';
@@ -464,7 +464,7 @@
         - Primer apellido 
         
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_apellido = concat((string_to_array(propietario, ' '))[3],' ',(string_to_array(propietario, ' '))[4])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DEL %';
@@ -472,27 +472,27 @@
     - Nombre con tres espacios que no tienen la expresión 'DE'.
         - Identificación.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DE %';
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DE %';
             ```
         - Segundo nombre
             ```sql
-            update girondatos 
+            update public.girondatos 
             set segundo_nombre = (string_to_array(propietario, ' '))[2]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DE %';
             ```
         - Primer apellido.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_apellido = concat((string_to_array(propietario, ' '))[3],' ',(string_to_array(propietario, ' '))[4])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  and propietario  like '% DE %'; 
@@ -501,14 +501,14 @@
         - Identificación.
             ```sql
             --Propietario con tres espacios en su nombre el cual no tiene la palabra "DEL" o "DE"
-            select * from girondatos  
+            select * from public.girondatos  
             where tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  
             and propietario  not like '% DE %' and propietario  not like '% DEL %';
             ```
         - Primer nombre. 
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) =  3
@@ -516,16 +516,16 @@
             ```
         -  Segundo nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set segundo_nombre = (string_to_array(propietario, ' '))[2]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  
             and propietario  not like '% DE %' and propietario  not like '% DEL %';
-            update girondatos
+            update public.girondatos
             ```
         - Primer apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set primer_apellido= (string_to_array(propietario, ' '))[3]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3  
@@ -533,7 +533,7 @@
             ```
         - Segundo apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set segundo_apellido= (string_to_array(propietario, ' '))[4]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 3 
@@ -542,34 +542,34 @@
     - Nombre con cuatro espacios.
         -  Identificación. 
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 4;  
             ```
         - Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 4;
             ```
         - Segundo nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set segundo_nombre = concat((string_to_array(propietario, ' '))[2],' ',(string_to_array(propietario, ' '))[3])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 4;
             ```
         - Primer apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set primer_apellido= (string_to_array(propietario, ' '))[4]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 4;
             ```
         - Segundo apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set segundo_apellido= (string_to_array(propietario, ' '))[5]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 4;
@@ -577,34 +577,34 @@
     - Nombre con cinco espacios.
         - Identificación.
             ```sql
-            select * from girondatos g 
+            select * from public.girondatos g 
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 5;
             ```
         -  Primer nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set primer_nombre = (string_to_array(propietario, ' '))[1]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 5;
             ```
         - Segundo nombre.
             ```sql
-            update girondatos 
+            update public.girondatos 
             set segundo_nombre = concat((string_to_array(propietario, ' '))[2],' ',(string_to_array(propietario, ' '))[3])
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 5;
             ```
         - Primer apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set primer_apellido= (string_to_array(propietario, ' '))[5]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 5;
             ```
         - Segundo apellido.
             ```sql
-            update girondatos
+            update public.girondatos
             set segundo_apellido= (string_to_array(propietario, ' '))[6]
             where  tipo_de_documento_de_identificacion  not like 'NIT' 
             and (array_length(string_to_array(propietario , ' '),1)-1) = 5;
@@ -613,25 +613,33 @@
     - Creación del atributo razón social.	
         ```sql
         --Creacion del campo Razon Social 
-        alter table  girondatos add razon_social varchar(250);
+        alter table  public.girondatos add razon_social varchar(250);
         ```
     - Asignación de valores a la razón social a los propietarios con tipo de identificación NIT.
         ```sql
         --Adicion de los valores de la razon social
-        update girondatos set razon_social = propietario 
+        update public.girondatos set razon_social = propietario 
         where  tipo_de_documento_de_identificacion   like 'NIT'; 
         ```
 
 ## Borrado de atributos que no se van a emplear ##
 - **numero_subterraneos**
     ```sql
-    alter table girondatos drop numero_subterraneos;
+    alter table public.girondatos drop numero_subterraneos;
     ```
 - **vereda_codigo**
     ```sql
-    alter table girondatos drop vereda_codigo;
+    alter table public.girondatos drop vereda_codigo;
     ```
 - **propietario**
     ```sql
-    alter table girondatos drop propietario;
+    alter table public.girondatos drop propietario;
+## Cambio de sistema de proyección de los insumos geográficos ##
+- **terrenp**
+    ```sql
+    --Cambio del sistema de proyección de la capa de terrenos
+    alter table public.terreno 
+        alter column geom type geometry(MultiPolygon, 9377)
+        using st_transform(st_setsrid(geom,3116), 9377)
+    ;
     ```
